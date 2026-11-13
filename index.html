@@ -1,0 +1,185 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Resilience Engineering in Cloud Systems · UNC Charlotte</title>
+<meta name="description" content="ITCS 4010-U92, Spring 2027 at UNC Charlotte Center City: design computing systems that withstand, adapt to and recover from failure. Tuesdays 5:30–8:00 p.m.">
+<meta property="og:title" content="Foundations of Resilience Engineering in Cloud Systems">
+<meta property="og:description" content="ITCS 4010-U92 · Spring 2027 · UNC Charlotte Center City · Tuesdays 5:30–8:00 p.m.">
+<meta property="og:type" content="website">
+<style>
+  :root {
+    --bg: #ffffff;
+    --surface: #eef3f0;
+    --text: #17251f;
+    --muted: #55625c;
+    --brand: #005035;
+    --brand-deep: #0d2b20;
+    --gold: #8a7a45;
+    --gold-bright: #a49665;
+    --on-brand: #ffffff;
+    --code-bg: #0d2b20;
+    --code-text: #f4f4f4;
+    --rule: #d6e0db;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0f1a15;
+      --surface: #17271f;
+      --text: #e8efeb;
+      --muted: #a6b5ae;
+      --brand: #3f9b74;
+      --brand-deep: #0a1611;
+      --gold: #c9b77e;
+      --gold-bright: #c9b77e;
+      --on-brand: #ffffff;
+      --code-bg: #08110d;
+      --code-text: #e8efeb;
+      --rule: #26372f;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f1a15; --surface: #17271f; --text: #e8efeb; --muted: #a6b5ae; --brand: #3f9b74;
+    --brand-deep: #0a1611; --gold: #c9b77e; --gold-bright: #c9b77e; --on-brand: #ffffff;
+    --code-bg: #08110d; --code-text: #e8efeb; --rule: #26372f;
+  }
+  * { box-sizing: border-box; }
+  html { -webkit-text-size-adjust: 100%; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font: 17px/1.6 -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  }
+  a { color: var(--brand); text-underline-offset: 3px; }
+  .wrap { max-width: 880px; margin: 0 auto; padding: 0 16px; }
+
+  header.hero { background: #0d2b20; color: #ffffff; padding: 56px 0 48px; }
+  .eyebrow { color: #c9b77e; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; font-size: 13px; margin: 0 0 14px; }
+  h1 { font-size: clamp(30px, 6vw, 48px); line-height: 1.12; margin: 0 0 16px; letter-spacing: -.01em; }
+  .lede { font-size: clamp(18px, 2.6vw, 21px); color: #d8e6df; margin: 0 0 28px; max-width: 40em; }
+  .cta { display: flex; flex-wrap: wrap; gap: 12px; }
+  .btn {
+    display: inline-block; padding: 12px 20px; border-radius: 8px; font-weight: 700; text-decoration: none;
+    background: #a49665; color: #0d2b20; min-height: 44px;
+  }
+  .btn.ghost { background: transparent; color: #ffffff; border: 2px solid #3f6f5a; }
+  .btn:focus-visible { outline: 3px solid #ffffff; outline-offset: 2px; }
+
+  .facts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1px; background: var(--rule);
+           border: 1px solid var(--rule); border-radius: 10px; overflow: hidden; margin: -28px 0 40px; position: relative; }
+  .fact { background: var(--bg); padding: 16px 18px; }
+  .fact b { display: block; font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 700; }
+  .fact span { display: block; font-weight: 600; margin-top: 2px; }
+
+  section { margin: 0 0 44px; }
+  h2 { font-size: 24px; line-height: 1.25; margin: 0 0 14px; color: var(--brand); }
+  p { margin: 0 0 14px; }
+  .muted { color: var(--muted); }
+
+  .topics { display: flex; flex-wrap: wrap; gap: 8px; padding: 0; margin: 18px 0 0; list-style: none; }
+  .topics li { background: var(--surface); border-radius: 999px; padding: 6px 14px; font-size: 15px; font-weight: 600; }
+
+  .loop { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; padding: 0; margin: 0; list-style: none; counter-reset: step; }
+  .loop li { background: var(--surface); border-radius: 10px; padding: 18px; counter-increment: step; }
+  .loop li::before {
+    content: counter(step); display: grid; place-items: center; width: 34px; height: 34px; border-radius: 50%;
+    background: var(--brand); color: var(--on-brand); font-weight: 800; margin-bottom: 10px;
+  }
+  .loop b { display: block; margin-bottom: 4px; }
+  .loop span { font-size: 15px; color: var(--muted); }
+
+  .demo { background: var(--surface); border-radius: 12px; padding: 24px; }
+  pre {
+    background: var(--code-bg); color: var(--code-text); border-radius: 8px; padding: 16px; margin: 16px 0 12px;
+    font: 14px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace; white-space: pre-wrap; overflow-wrap: anywhere;
+  }
+  pre .c { color: #c9b77e; }
+
+  .share { display: flex; gap: 24px; align-items: center; }
+  .share img { width: 148px; height: 148px; border-radius: 8px; background: #ffffff; padding: 8px; flex: none; }
+
+  footer { border-top: 1px solid var(--rule); padding: 24px 0 40px; font-size: 14px; color: var(--muted); }
+
+  @media (max-width: 720px) {
+    header.hero { padding: 40px 0 44px; }
+    .facts { grid-template-columns: 1fr 1fr; margin-top: -24px; }
+    .loop { grid-template-columns: 1fr 1fr; }
+    .share { flex-direction: column; align-items: flex-start; }
+  }
+  @media (max-width: 400px) {
+    .loop { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header class="hero">
+  <div class="wrap">
+    <p class="eyebrow">UNC Charlotte · ITCS 4010-U92 · Spring 2027</p>
+    <h1>Foundations of Resilience Engineering in Cloud Systems</h1>
+    <p class="lede">Learn to design computing systems that withstand, adapt to and recover from failure. Build real systems on AWS, break them on purpose, and defend how you’d fix them.</p>
+    <div class="cta">
+      <a class="btn" href="https://github.com/resilience-in-the-cloud/balance-lookup-demo">Try the demo</a>
+      <a class="btn ghost" href="#about">About the course</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div class="facts" role="list">
+    <div class="fact" role="listitem"><b>When</b><span>Tuesdays, 5:30–8:00 p.m.</span></div>
+    <div class="fact" role="listitem"><b>Where</b><span>UNC Charlotte Center City</span></div>
+    <div class="fact" role="listitem"><b>Format</b><span>Face-to-face · 3 credits</span></div>
+    <div class="fact" role="listitem"><b>Instructor</b><span>Lucas Little</span></div>
+  </div>
+
+  <section id="about">
+    <h2>About the course</h2>
+    <p>This course examines the foundational principles of designing computing systems that can withstand, adapt to, and recover from failure. Students will explore distributed systems, fault tolerance, redundancy, reliability engineering, consistency, disaster recovery, observability, and failure propagation.</p>
+    <p>Rather than focusing on specific cloud technologies, the course emphasizes enduring computer science and engineering concepts, using Amazon Web Services (AWS) as a practical environment for applying them. It also examines emerging resilience challenges in artificial intelligence and autonomous systems, including probabilistic behavior, cascading failures, and automated recovery.</p>
+    <p>Through hands-on exercises and architectural analysis, you will develop the skills to design and evaluate dependable systems across evolving computing environments.</p>
+    <ul class="topics" aria-label="Topics">
+      <li>Fault tolerance</li><li>Redundancy</li><li>Distributed systems</li><li>Consistency</li>
+      <li>Observability</li><li>Disaster recovery</li><li>Failure propagation</li><li>Chaos testing</li><li>Resilient AI systems</li>
+    </ul>
+  </section>
+
+  <section>
+    <h2>How a week works</h2>
+    <p class="muted">Your team works as a consultancy for a fictional regional bank. Every Tuesday brings a new client problem.</p>
+    <ol class="loop">
+      <li><b>Build</b><span>Deploy a small piece of the bank’s system on AWS with Terraform.</span></li>
+      <li><b>Harden</b><span>Add the week’s resilience pattern: health checks, retries, failover, alarms.</span></li>
+      <li><b>Break</b><span>Inject failures on purpose and measure what actually happens.</span></li>
+      <li><b>Recommend</b><span>Present your fix to the client, with the cost and the risk.</span></li>
+    </ol>
+  </section>
+
+  <section class="demo" id="demo">
+    <h2>See it for yourself</h2>
+    <p>The first-night demo is public. It deploys a tiny bank API, breaks it, and shows how long it takes monitoring to notice. Look through it, or run it yourself if you have an AWS account.</p>
+    <pre><span class="c"># the same repo we use in the first class</span>
+git clone https://github.com/resilience-in-the-cloud/balance-lookup-demo
+cd balance-lookup-demo
+cat README.md</pre>
+    <a class="btn" href="https://github.com/resilience-in-the-cloud/balance-lookup-demo" style="background:var(--brand);color:var(--on-brand)">Open the demo on GitHub</a>
+  </section>
+
+  <section>
+    <h2>Share this page</h2>
+    <div class="share">
+      <img src="qr.svg" alt="QR code linking to this page">
+      <p class="muted">Scan to open this page on your phone, or send a friend the link. To enroll, register for ITCS 4010, section U92, in the Spring 2027 term through the usual UNC Charlotte registration system.</p>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    UNC Charlotte · College of Computing and Informatics · Spring 2027 ·
+    <a href="https://github.com/resilience-in-the-cloud">github.com/resilience-in-the-cloud</a>
+  </div>
+</footer>
+
+</body>
+</html>
